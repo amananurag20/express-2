@@ -1,0 +1,152 @@
+const express = require("express");
+const mongoose = require("mongoose");
+const userModel = require("./models/User");
+const bcrypt = require("bcrypt");
+const foodModel = require("./models/Food");
+const app = express();
+
+app.use(express.json()); //json->object
+app.use(express.urlencoded({ extended: false })); //urlencoded->readbale
+
+//mongodb+srv://amananurag20:g8ZfkMnjxhlpRbRY@cluster0.dvbzhdh.mongodb.net/
+
+const dbConnect = async () => {
+  try {
+    await mongoose.connect(
+      "mongodb+srv://amananurag20:g8ZfkMnjxhlpRbRY@cluster0.dvbzhdh.mongodb.net/"
+    );
+    console.log("db connected successfully");
+  } catch (e) {
+    console.log(e);
+  }
+};
+
+dbConnect();
+
+app.post("/users", async function (req, res) {
+  const { name, email, mobile, password, profilePic } = req.body;
+
+  if (!name || !email || !password) {
+    return res.json({ message: "please give all data", success: false });
+  }
+
+  try{
+    const user= await userModel.findOne({email});
+    if(user){
+      return res.json({msg:"user already exist", success:false})
+    }
+  }catch(e){
+    console.log(e);
+    return res.json({ message: "something went wrong", success: false });
+  }
+
+
+  const hashPassword=  await bcrypt.hash(password,10);
+  console.log(hashPassword);
+  
+  try {
+    const user = await userModel.create({
+      name: name,
+      email: email,
+      password:hashPassword,
+      mobile,
+      profilePic,
+    });
+
+    res.json({ user, success: "true" });
+  } catch (e) {
+    console.log(e);
+    res.json({ message: "something went wrong", success: false });
+  }
+});
+
+app.post("/login",async(req,res)=>{
+
+  const {email,password}= req.body;
+
+  if(!email || !password){
+    return res.json({msg:"give full credential",success:false})
+  }
+  
+  //we need to check user exist or not 
+
+  const user=await userModel.findOne({email});
+ 
+
+  if(!user){
+    return res.json({msg:"user does not exist", success:false})
+  }
+  
+  const isPasswordCorrect= await bcrypt.compare(password,user.password);
+
+  if(!isPasswordCorrect){
+    return res.json({msg:"Wrong credential",success:false})
+  }
+  res.json({msg:"user successfully loggedin", success:true})
+
+})
+
+
+app.get("/",async(req,res)=>{
+
+  res.send("<h1>working.....</h1>")
+
+})
+
+
+
+app.get("/foods",async(req,res)=>{
+  
+  const foods= await foodModel.find({});
+
+  res.json({foods,success:true})
+
+});
+
+
+app.get("/foods/:id",async(req,res)=>{
+
+  const id= req.params.id;
+
+  console.log(req.headers)
+  
+  const foods= await foodModel.findById(id);
+  
+  res.setHeader("x-name","amananurag");
+  res.setHeader("x-company","byeee");
+
+  res.json({foods,success:true})
+
+});
+
+app.post("/foods",async(req,res)=>{
+
+  // {name:"maagee", price:100, description:"best food",category:"Beverage"};
+    
+  try{
+    const foods= await foodModel.create(req.body);
+    res.json({foods,success:true})
+  }catch(e){
+    console.log(e)
+    res.json({success:false,msg:"something went wrong"})
+  }
+})
+
+app.put("/foods/:id",async(req,res)=>{
+
+    const id= req.params.id;
+    const foods= await foodModel.findByIdAndUpdate(id,req.body,{new:true})
+
+  res.json({success:true,foods})
+})
+
+app.delete("/foods/:id",async(req,res)=>{
+    const id= req.params.id;
+    const foods= await foodModel.findByIdAndDelete(id)
+
+    res.json({foods, success:true})
+})
+
+app.listen(5000, () => {
+  console.log("server is running on port:5000");
+});
