@@ -20,6 +20,11 @@ const userSchema = mongoose.Schema({
     default:
       "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQzHMDlwRCHOHZP_tX7jRYNxV8W8MpNEog45w&s",
   },
+  role:{
+    type:String,
+    enum:["user","admin"],
+    default:"user"
+  }
 });
 
 const userModel = mongoose.model("User", userSchema);

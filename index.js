@@ -1,8 +1,10 @@
 const express = require("express");
+const jwt= require("jsonwebtoken")
 const mongoose = require("mongoose");
 const userModel = require("./models/User");
 const bcrypt = require("bcrypt");
 const foodModel = require("./models/Food");
+const verifyToken = require("./middleware/verifyToken");
 const app = express();
 
 app.use(express.json()); //json->object
@@ -82,10 +84,24 @@ app.post("/login",async(req,res)=>{
   if(!isPasswordCorrect){
     return res.json({msg:"Wrong credential",success:false})
   }
-  res.json({msg:"user successfully loggedin", success:true})
+
+  //create token
+  
+  const token= jwt.sign({id:user._id, email:user.email,role:user.role},"hello",{
+    expiresIn:"1h"
+  })
+
+
+  res.json({msg:"user successfully loggedin", success:true,token})
 
 })
 
+app.get("/profile",verifyToken,async(req,res)=>{
+   
+  const user= await userModel.findOne({email:req.user.email},"-password")
+
+  res.json({user, success:true})
+})
 
 app.get("/",async(req,res)=>{
 
@@ -95,7 +111,8 @@ app.get("/",async(req,res)=>{
 
 
 
-app.get("/foods",async(req,res)=>{
+app.get("/foods",verifyToken,async(req,res)=>{
+  
   
   const foods= await foodModel.find({});
 
@@ -104,7 +121,7 @@ app.get("/foods",async(req,res)=>{
 });
 
 
-app.get("/foods/:id",async(req,res)=>{
+app.get("/foods/:id",verifyToken,async(req,res)=>{
 
   const id= req.params.id;
 
@@ -132,7 +149,7 @@ app.post("/foods",async(req,res)=>{
   }
 })
 
-app.put("/foods/:id",async(req,res)=>{
+app.put("/foods/:id",verifyToken,async(req,res)=>{
 
     const id= req.params.id;
     const foods= await foodModel.findByIdAndUpdate(id,req.body,{new:true})
@@ -140,11 +157,17 @@ app.put("/foods/:id",async(req,res)=>{
   res.json({success:true,foods})
 })
 
-app.delete("/foods/:id",async(req,res)=>{
+app.delete("/foods/:id",verifyToken,async(req,res)=>{
     const id= req.params.id;
-    const foods= await foodModel.findByIdAndDelete(id)
 
-    res.json({foods, success:true})
+    if(req.user.role=="admin"){
+
+      const foods= await foodModel.findByIdAndDelete(id)
+  
+      res.json({foods, success:true})
+    }else{
+      res.json({msg:"you are not admin", success:false})
+    }
 })
 
 app.listen(5000, () => {
