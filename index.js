@@ -5,10 +5,13 @@ const userModel = require("./models/User");
 const bcrypt = require("bcrypt");
 const foodModel = require("./models/Food");
 const verifyToken = require("./middleware/verifyToken");
+const cookieParser= require("cookie-parser")
 const app = express();
 
 app.use(express.json()); //json->object
 app.use(express.urlencoded({ extended: false })); //urlencoded->readbale
+
+app.use(cookieParser())
 
 //mongodb+srv://amananurag20:g8ZfkMnjxhlpRbRY@cluster0.dvbzhdh.mongodb.net/
 
@@ -90,9 +93,27 @@ app.post("/login",async(req,res)=>{
   const token= jwt.sign({id:user._id, email:user.email,role:user.role},"hello",{
     expiresIn:"1h"
   })
+  
+  // res.cookie("aman","12345",{
+  //    maxAge:1000*60,
+  //   //expires: new Date(Date.now()+1000*60*60),
+  //    httpOnly: true,
+     
+  // })
+  // res.cookie("game","gta 5",{
+  //    maxAge:1000*60,
+  //   //expires: new Date(Date.now()+1000*60*60),
+  //    httpOnly: true,
+     
+  // })
 
+  res.cookie("token",token,{
+     maxAge:1000*60,  
+     httpOnly: true,
+     secure:true
+  })
 
-  res.json({msg:"user successfully loggedin", success:true,token})
+  res.json({msg:"user successfully loggedin", success:true})
 
 })
 
@@ -113,6 +134,7 @@ app.get("/",async(req,res)=>{
 
 app.get("/foods",verifyToken,async(req,res)=>{
   
+  console.log("cookie",req.cookies)
   
   const foods= await foodModel.find({});
 
