@@ -111,7 +111,7 @@ app.get("/",async(req,res)=>{
 
 
 
-app.get("/foods",verifyToken,async(req,res)=>{
+app.get("/foods",async(req,res)=>{
   
   
   const foods= await foodModel.find({});
@@ -170,6 +170,6 @@ app.delete("/foods/:id",verifyToken,async(req,res)=>{
     }
 })
 
-app.listen(5000, () => {
-  console.log("server is running on port:5000");
+app.listen(80, () => {
+  console.log("server is running on port:80");
 });
