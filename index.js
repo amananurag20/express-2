@@ -6,12 +6,17 @@ const bcrypt = require("bcrypt");
 const foodModel = require("./models/Food");
 const verifyToken = require("./middleware/verifyToken");
 const cookieParser= require("cookie-parser")
+const cors = require("cors");
 const app = express();
 
 app.use(express.json()); //json->object
 app.use(express.urlencoded({ extended: false })); //urlencoded->readbale
 
 app.use(cookieParser())
+app.use(cors({
+  origin:["http://localhost:5173"], 
+}))
+
 
 //mongodb+srv://amananurag20:g8ZfkMnjxhlpRbRY@cluster0.dvbzhdh.mongodb.net/
 
@@ -28,7 +33,7 @@ const dbConnect = async () => {
 
 dbConnect();
 
-app.post("/users", async function (req, res) {
+app.post("/signup", async function (req, res) {
   const { name, email, mobile, password, profilePic } = req.body;
 
   if (!name || !email || !password) {
@@ -117,6 +122,18 @@ app.post("/login",async(req,res)=>{
 
 })
 
+app.get("/logout",(req,res)=>{
+
+  // res.clearCookie("token",{
+
+  // });
+
+  res.cookie("token","",{
+    maxAge:0
+  })
+  res.json({msg:"user logout",success:true})
+})
+
 app.get("/profile",verifyToken,async(req,res)=>{
    
   const user= await userModel.findOne({email:req.user.email},"-password")
@@ -142,6 +159,7 @@ app.get("/foods",verifyToken,async(req,res)=>{
 
 });
 
+//user
 
 app.get("/foods/:id",verifyToken,async(req,res)=>{
 
