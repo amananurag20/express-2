@@ -14,7 +14,8 @@ app.use(express.urlencoded({ extended: false })); //urlencoded->readbale
 
 app.use(cookieParser())
 app.use(cors({
-  origin:["http://localhost:5173"], 
+  origin:["http://localhost:5173"],
+  credentials:true
 }))
 
 
@@ -106,14 +107,14 @@ app.post("/login",async(req,res)=>{
      
   // })
   // res.cookie("game","gta 5",{
-  //    maxAge:1000*60,
+  //    maxAge:1000*10,
   //   //expires: new Date(Date.now()+1000*60*60),
   //    httpOnly: true,
      
   // })
 
   res.cookie("token",token,{
-     maxAge:1000*60,  
+     maxAge:1000*60*30,  
      httpOnly: true,
      secure:true
   })
