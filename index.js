@@ -14,7 +14,7 @@ app.use(express.urlencoded({ extended: false })); //urlencoded->readbale
 
 app.use(cookieParser())
 app.use(cors({
-  origin:["http://localhost:5173"],
+  origin:"http://localhost:5173",
   credentials:true
 }))
 
@@ -116,7 +116,7 @@ app.post("/login",async(req,res)=>{
   res.cookie("token",token,{
      maxAge:1000*60*30,  
      httpOnly: true,
-     secure:true
+     secure:false
   })
 
   res.json({msg:"user successfully loggedin", success:true})
@@ -134,6 +134,23 @@ app.get("/logout",(req,res)=>{
   })
   res.json({msg:"user logout",success:true})
 })
+
+app.get("/check-token",(req,res)=>{
+
+   const token=req.cookies.token;
+   console.log(token)
+  
+      try{
+          const userData=jwt.verify(token,"hello");
+          res.json({success:true, msg:"correct token"})       
+         
+      }catch(e){
+          console.log(e)
+          res.json({msg:"invalid token", success:false})
+      }
+
+})
+
 
 app.get("/profile",verifyToken,async(req,res)=>{
    
