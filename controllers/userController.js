@@ -65,7 +65,7 @@ const login=async(req,res)=>{
 
   //create token
   
-  const token= jwt.sign({id:user._id, email:user.email,role:user.role},"hello",{
+  const token= jwt.sign({id:user._id, email:user.email,role:user.role},process.env.SECRET_KEY,{
     expiresIn:"1h"
   })
   
@@ -111,7 +111,7 @@ const checkToken=(req,res)=>{
    console.log(token)
   
       try{
-          const userData=jwt.verify(token,"hello");
+          const userData=jwt.verify(token,process.env.SECRET_KEY);
           res.json({success:true, msg:"correct token"})       
          
       }catch(e){

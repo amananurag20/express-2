@@ -7,7 +7,7 @@ const verifyToken=(req,res,next)=>{
     const token=req.cookies.token;
   //check token-
     try{
-        const userData=jwt.verify(token,"hello");
+        const userData=jwt.verify(token,process.env.SECRET_KEY);
         req.user=userData;
         
         next();
