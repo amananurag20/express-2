@@ -59,6 +59,6 @@ app.use("/foods",foodRouter);
 
 
 
-app.listen(80, () => {
+app.listen(5000, () => {
   console.log("server is running on port:5000");
 });
